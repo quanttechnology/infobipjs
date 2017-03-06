@@ -29,7 +29,7 @@ export interface URLPropsExtend{
 }
 export class InfobipSMS {
     urls:InfobipURL = {
-        base: 'http://api.infobip.com',
+        base: 'https://api.infobip.com',
         balance: '/account/1/balance',
         numberContext: '/number/1/query',
         preview: '/sms/1/preview',
@@ -48,74 +48,74 @@ export class InfobipSMS {
         }
     }
 
-    _get(props:URLPropsExtend) {
+    private _get(props:URLPropsExtend) {
         const urlProps:URLProps = _.extend(this.props, props);
         return request.get( urlProps );
     }
 
-    _post(props:URLPropsExtend) {
-        const urlProps:URLProps = _.extend(this.props, props)
+    private _post(props:URLPropsExtend) {
+        const urlProps:URLProps = _.extend(this.props, props);
         return request.post(urlProps);
     }
 
-    getBalance() {
+    public getBalance() {
         return this._get({
             url: this.urls.base + this.urls.balance
         });
     }
 
-    getPreview(_text) {
+    public getPreview(text:string) {
         return this._post({
             url: this.urls.base + this.urls.preview,
             json: {
-                text: _text
+                text: text
             }
         });
     }
 
-    sendOne(_from, _to, _text) {
+    public sendOne(from:string, to:string, text:string) {
         return this._post({
             url: this.urls.base + this.urls.sendOne,
             json: {
-                from: _from,
-                to: _to,
-                text: _text
+                from: from,
+                to: to,
+                text: text
             }
         });
     }
 
-    sendMulti(_messages) {
+    public sendMulti(messages) {
         return this._post({
             url: this.urls.base + this.urls.sendMulti,
-            json: _messages
+            json: messages
         });
     }
 
-    sendAdvanced(_messages) {
+    public sendAdvanced(messages) {
         return this._post({
             url: this.urls.base + this.urls.sendAdvanced,
-            json: _messages
+            json: messages
         });
     }
 
-    getReports(_bulkId, _msgId, _limit) {
-        if (!_limit) _limit = 50;
+    public getReports(bulkId, msgId, limit) {
+        if (!limit) limit = 50;
 
         return this._get({
             url: this.urls.base + this.urls.reports,
             json: {
-                bulkId: _bulkId,
-                messageId: _msgId,
-                limit: _limit
+                bulkId: bulkId,
+                messageId: msgId,
+                limit: limit
             }
         })
     }
 
-    getNumberContext(_numbers) {
+    public getNumberContext(numbers:string) {
         return this._post({
             url: this.urls.base + this.urls.numberContext,
             json: {
-                to: _numbers
+                to: numbers
             }
         })
     }
