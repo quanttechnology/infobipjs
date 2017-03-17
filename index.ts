@@ -12,9 +12,99 @@ export interface InfobipURL{
     sendAdvanced: string;
 }
 
+export interface InfobipBalanceResponse{
+    balance:number;
+    currency:string;
+}
+
+export interface InfobipPreviewResponse{
+    originalText:string;
+    previews: {
+        textPreview: string,
+        messageCount: number,
+        charactersRemaining: number,
+        configuration: {
+            language?: {
+                "languageCode?": string
+            }
+        }
+    }[]
+}
+
+export interface InfobipSMSRequest{
+    to:string;
+    text:string;
+    from?:string;
+}
+
+export interface InfobipMultipleSMSRequest{
+    messages:InfobipSMSRequest[];
+}
+
+export interface InfobipSingleSMSResponse{
+    bulkId:string;
+    messages:InfobipSMSResponseDetail[];
+}
+export interface InfobipMultipleSMSResponse{
+    bulkId:string;
+    messages:InfobipSMSResponseDetail[];
+}
+
+export interface InfobipSMSStatus{
+    groupId:number;
+    groupName:string;
+    id:number;
+    name:string;
+    description:string
+    action:string
+}
+
+
+export interface InfobipSMSResponseDetail{
+    to:string;
+    status:InfobipSMSStatus
+    smsCount:number;
+    messageId:string;
+}
+
+export interface InfobipSMSReportResponse{
+    results:InfobipSMSReport[];
+}
+
+export interface InfobipSMSReport{
+    bulkId:string;
+    messageId:string;
+    to:string;
+    from:string;
+    sentAt:string;
+    doneAt:string;
+    smsCount:number;
+    mccMnc:string;
+    callbackData:string;
+    price:InfobipSMSPrice;
+    status:InfobipSMSStatus;
+    error:InfobipError;
+
+}
+
+export interface InfobipError{
+    groupId:number;
+    groupName:string;
+    id:number;
+    name:string;
+    description:string;
+    permanent:boolean;
+}
+export interface InfobipSMSPrice{
+    pricePerMessage:number;
+    currency:string;
+}
+
+
 export interface URLProps extends URLPropsBase , URLPropsExtend{
 
 }
+
 
 export interface URLPropsBase{
     headers:{
@@ -61,7 +151,7 @@ export class InfobipSMS {
     public getBalance() {
         return this._get({
             url: this.urls.base + this.urls.balance
-        });
+        }) as PromiseLike<InfobipBalanceResponse>;
     }
 
     public getPreview(text:string) {
@@ -70,10 +160,10 @@ export class InfobipSMS {
             json: {
                 text: text
             }
-        });
+        }) as PromiseLike<InfobipPreviewResponse>;
     }
 
-    public sendOne(from:string, to:string, text:string) {
+    public sendOne(to:string, text:string, from?:string) {
         return this._post({
             url: this.urls.base + this.urls.sendOne,
             json: {
@@ -81,14 +171,42 @@ export class InfobipSMS {
                 to: to,
                 text: text
             }
-        });
+        }) as PromiseLike<InfobipSingleSMSResponse>;
     }
 
-    public sendMulti(messages) {
+    public sendMulti(messages:InfobipMultipleSMSRequest) {
         return this._post({
             url: this.urls.base + this.urls.sendMulti,
             json: messages
-        });
+        }) as PromiseLike<InfobipMultipleSMSResponse>;
+    }
+
+    public getAllReport(limit:number=50){
+        return this._get({
+            url: this.urls.base + this.urls.reports,
+            json: {
+                limit: limit
+            }
+        }) as PromiseLike<InfobipSMSReportResponse>;
+    }
+    public getReportByMessageID(msgId?:string){
+        return this._get({
+            url: this.urls.base + this.urls.reports,
+            json: {
+                messageId: msgId,
+                limit: 1
+            }
+        }) as PromiseLike<InfobipSMSReportResponse>;
+    }
+    public getReportByBulkID(bulkId:string, limit:number=50) {
+
+        return this._get({
+            url: this.urls.base + this.urls.reports,
+            json: {
+                bulkId: bulkId,
+                limit: limit
+            }
+        }) as PromiseLike<InfobipSMSReportResponse>;
     }
 
     public sendAdvanced(messages) {
@@ -97,20 +215,6 @@ export class InfobipSMS {
             json: messages
         });
     }
-
-    public getReports(bulkId, msgId, limit) {
-        if (!limit) limit = 50;
-
-        return this._get({
-            url: this.urls.base + this.urls.reports,
-            json: {
-                bulkId: bulkId,
-                messageId: msgId,
-                limit: limit
-            }
-        })
-    }
-
     public getNumberContext(numbers:string) {
         return this._post({
             url: this.urls.base + this.urls.numberContext,
